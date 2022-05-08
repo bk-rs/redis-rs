@@ -123,6 +123,7 @@ impl DerefMut for RedisConnection {
     }
 }
 
+//
 impl ConnectionLike for RedisConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
         self.deref_mut().req_packed_command(cmd)
@@ -139,5 +140,61 @@ impl ConnectionLike for RedisConnection {
 
     fn get_db(&self) -> i64 {
         self.deref().get_db()
+    }
+}
+
+//
+pub trait ConnectionCloseRequiredLike {
+    fn set_close_required_with_error(&mut self, err: &RedisError);
+    fn set_close_required(&mut self);
+    fn is_close_required(&self) -> bool;
+}
+
+impl ConnectionCloseRequiredLike for RedisConnection {
+    fn set_close_required_with_error(&mut self, err: &RedisError) {
+        RedisConnection::set_close_required_with_error(self, err)
+    }
+
+    fn set_close_required(&mut self) {
+        RedisConnection::set_close_required(self)
+    }
+
+    fn is_close_required(&self) -> bool {
+        RedisConnection::is_close_required(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::error;
+
+    #[tokio::test]
+    async fn test_close_required_like() -> Result<(), Box<dyn error::Error>> {
+        let manager = RedisConnectionManager::new("redis://127.0.0.1:6379")?;
+        let pool = bb8::Pool::builder()
+            .test_on_check_out(false)
+            .build(manager)
+            .await?;
+
+        let mut conn =
+            match tokio::time::timeout(tokio::time::Duration::from_millis(100), pool.get()).await {
+                Ok(Ok(x)) => x,
+                Ok(Err(err)) => panic!("{}", err),
+                Err(_) => return Ok(()),
+            };
+
+        async fn ping<C>(conn: &mut C) -> Result<(), Box<dyn error::Error>>
+        where
+            C: ConnectionLike + ConnectionCloseRequiredLike,
+        {
+            let _ = redis::cmd("PING").query_async(conn).await?;
+            Ok(())
+        }
+
+        ping(conn.deref_mut()).await?;
+
+        Ok(())
     }
 }
