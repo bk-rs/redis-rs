@@ -1,0 +1,22 @@
+[package]
+name = "bb8-redis-break-with-error"
+version = "0.0.0"
+authors = ["vkill <vkill.net@gmail.com>"]
+edition = "2021"
+description = "Full-featured async (tokio-based) redis connection pool (like r2d2)"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/bk-rs/redis-rs"
+homepage = "https://github.com/bk-rs/redis-rs"
+documentation = "https://docs.rs/bb8-redis-break-with-error"
+keywords = []
+categories = []
+readme = "README.md"
+
+[dependencies]
+async-trait = { version = "0.1", default-features = false }
+bb8 = { version = "0.8", default-features = false }
+redis = { version = "0.21", default-features = false, features = ["tokio-comp"] }
+
+[dev-dependencies]
+tokio = { version = "1.18", features = ["macros", "rt-multi-thread"] }
+futures-util = { version = "0.3" }
