@@ -78,7 +78,7 @@ impl RedisConnection {
 
     pub fn set_close_required_with_error(&mut self, err: &RedisError) {
         let close_required = match err.kind() {
-            ErrorKind::ResponseError => false,
+            ErrorKind::ResponseError => true,
             ErrorKind::AuthenticationFailed => true,
             ErrorKind::TypeError => false,
             ErrorKind::ExecAbortError => false,

@@ -12,6 +12,10 @@ keywords = []
 categories = []
 readme = "README.md"
 
+[features]
+default = []
+_integration_tests = []
+
 [dependencies]
 async-trait = { version = "0.1", default-features = false }
 bb8 = { version = "0.8", default-features = false }
@@ -20,3 +24,11 @@ redis = { version = "0.21", default-features = false, features = ["tokio-comp"] 
 [dev-dependencies]
 tokio = { version = "1.18", features = ["macros", "rt-multi-thread"] }
 futures-util = { version = "0.3" }
+
+env_logger = { version = "0.9" }
+log = { version = "0.4" }
+
+[package.metadata.cargo-all-features]
+denylist = [
+    "_integration_tests"
+]
