@@ -189,7 +189,10 @@ mod tests {
         where
             C: ConnectionLike + ConnectionCloseRequiredLike,
         {
-            let _ = redis::cmd("PING").query_async(conn).await?;
+            let _ = redis::cmd("PING").query_async(conn).await.map_err(|err| {
+                conn.set_close_required_with_error(&err);
+                err
+            })?;
             Ok(())
         }
 
