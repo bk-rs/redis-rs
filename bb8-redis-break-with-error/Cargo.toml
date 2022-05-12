@@ -1,6 +1,6 @@
 [package]
 name = "bb8-redis-break-with-error"
-version = "0.11.2"
+version = "0.11.3"
 authors = ["vkill <vkill.net@gmail.com>"]
 edition = "2021"
 description = "Full-featured async (tokio-based) redis connection pool (like r2d2)"
@@ -13,7 +13,7 @@ categories = []
 readme = "README.md"
 
 [features]
-default = ["_integration_tests"]
+default = []
 _integration_tests = []
 
 [dependencies]
