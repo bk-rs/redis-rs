@@ -78,7 +78,7 @@ impl RedisConnection {
 
     pub fn set_close_required_with_error(&mut self, err: &RedisError) {
         let close_required = match err.kind() {
-            ErrorKind::ResponseError => true,
+            ErrorKind::ResponseError => false,
             ErrorKind::AuthenticationFailed => true,
             ErrorKind::TypeError => false,
             ErrorKind::ExecAbortError => false,
@@ -93,7 +93,17 @@ impl RedisConnection {
             ErrorKind::MasterDown => false,
             ErrorKind::IoError => true,
             ErrorKind::ClientError => true,
-            ErrorKind::ExtensionError => false,
+            ErrorKind::ExtensionError => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/types.rs#L315-L319
+                let err_str = err.to_string();
+                #[allow(clippy::needless_bool)]
+                if err_str.starts_with("NOAUTH:") {
+                    true
+                } else {
+                    // TODO
+                    false
+                }
+            }
             ErrorKind::ReadOnly => false,
             _ => true,
         };

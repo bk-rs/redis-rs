@@ -5,5 +5,5 @@ mod integration_tests {
     mod helpers;
 
     #[cfg(test)]
-    mod ping;
+    mod extension_error_with_noauth;
 }
