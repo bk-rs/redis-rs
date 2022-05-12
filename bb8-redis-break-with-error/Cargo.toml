@@ -13,7 +13,7 @@ categories = []
 readme = "README.md"
 
 [features]
-default = []
+default = ["_integration_tests"]
 _integration_tests = []
 
 [dependencies]

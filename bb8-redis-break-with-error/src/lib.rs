@@ -89,19 +89,22 @@ impl RedisConnection {
             ErrorKind::Ask => false,
             ErrorKind::TryAgain => false,
             ErrorKind::ClusterDown => false,
-            ErrorKind::CrossSlot => true,
+            ErrorKind::CrossSlot => false,
             ErrorKind::MasterDown => false,
-            ErrorKind::IoError => true,
+            ErrorKind::IoError => {
+                // TODO, is_connection_dropped is_connection_refusal
+                //
+                true
+            }
             ErrorKind::ClientError => true,
             ErrorKind::ExtensionError => {
                 // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/types.rs#L315-L319
-                let err_str = err.to_string();
-                #[allow(clippy::needless_bool)]
-                if err_str.starts_with("NOAUTH:") {
-                    true
-                } else {
-                    // TODO
-                    false
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/types.rs#L367
+                //
+                match err.code() {
+                    Some("NOAUTH") => true,
+                    Some("WRONGPASS") => true,
+                    _ => true,
                 }
             }
             ErrorKind::ReadOnly => false,

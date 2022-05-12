@@ -6,4 +6,7 @@ mod integration_tests {
 
     #[cfg(test)]
     mod extension_error_with_noauth;
+
+    #[cfg(test)]
+    mod extension_error_with_wpassword;
 }

@@ -8,7 +8,7 @@ use bb8_redis_break_with_error::{
 use futures_util::future::join_all;
 use tokio::task::JoinHandle;
 
-use super::helpers::{get_conn_addr, get_conn_addr_without_password, init_logger, PASSWORD};
+use super::helpers::{get_conn_addr_without_password, init_logger, PASSWORD};
 
 #[tokio::test]
 async fn simple() -> Result<(), Box<dyn error::Error>> {
@@ -43,57 +43,21 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
                             .await
                             .unwrap();
                     }
-                    _ => {}
+                    _ => {
+                        let _: () = cmd("AUTH")
+                            .arg("xxx")
+                            .query_async(&mut *conn)
+                            .await
+                            .map_err(|err| {
+                                assert_eq!(err.kind(), RedisErrorKind::ExtensionError);
+                                assert!(err.to_string().starts_with("WRONGPASS:"));
+                                assert_eq!(err.code(), Some("WRONGPASS"));
+                                conn.set_close_required_with_error(&err);
+
+                                err
+                            })?;
+                    }
                 }
-
-                let reply: String = cmd("PING")
-                    .arg(format!("PingMsg{}", i))
-                    .query_async(&mut *conn)
-                    .await
-                    .map_err(|err| {
-                        assert_eq!(err.kind(), RedisErrorKind::ExtensionError);
-                        assert!(err.to_string().starts_with("NOAUTH:"));
-                        assert_eq!(err.code(), Some("NOAUTH"));
-                        conn.set_close_required_with_error(&err);
-
-                        err
-                    })?;
-                assert_eq!(format!("PingMsg{}", i), reply);
-
-                Ok(())
-            });
-        handles.push(handle);
-    }
-
-    let rets = join_all(handles).await;
-    assert!(rets[0].as_ref().ok().unwrap().is_ok());
-    assert!(rets[1].as_ref().ok().unwrap().is_err());
-    assert!(rets[2].as_ref().ok().unwrap().is_err());
-
-    println!("{:?}", pool.state());
-    assert_eq!(pool.state().connections, 1);
-
-    //
-    //
-    //
-    let manager = RedisConnectionManager::new(get_conn_addr()?)?;
-    let pool = bb8::Pool::builder()
-        .max_size(10)
-        .test_on_check_out(false)
-        .build(manager)
-        .await?;
-
-    let mut handles = vec![];
-
-    for i in 0..3 {
-        let pool = pool.clone();
-
-        let handle: JoinHandle<Result<(), Box<dyn error::Error + Send + Sync>>> =
-            tokio::spawn(async move {
-                let mut conn = pool.get().await.map_err(|err| match err {
-                    bb8::RunError::User(err) => err,
-                    bb8::RunError::TimedOut => panic!("Pool TimedOut"),
-                })?;
 
                 let reply: String = cmd("PING")
                     .arg(format!("PingMsg{}", i))
@@ -109,8 +73,11 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
 
     let rets = join_all(handles).await;
     assert!(rets[0].as_ref().ok().unwrap().is_ok());
-    assert!(rets[1].as_ref().ok().unwrap().is_ok());
-    assert!(rets[2].as_ref().ok().unwrap().is_ok());
+    assert!(rets[1].as_ref().ok().unwrap().is_err());
+    assert!(rets[2].as_ref().ok().unwrap().is_err());
+
+    println!("{:?}", pool.state());
+    assert_eq!(pool.state().connections, 1);
 
     Ok(())
 }
