@@ -76,6 +76,14 @@ impl RedisConnection {
         }
     }
 
+    pub fn inner(&self) -> &Connection {
+        &self.connection
+    }
+
+    pub fn into_inner(self) -> Connection {
+        self.connection
+    }
+
     pub fn set_close_required_with_error(&mut self, err: &RedisError) {
         let val = match err.kind() {
             ErrorKind::ResponseError => false,
