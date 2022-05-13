@@ -9,7 +9,7 @@ use core::{
 use async_trait::async_trait;
 use redis::{
     aio::{Connection, ConnectionLike},
-    Client, Cmd, ErrorKind, IntoConnectionInfo, Pipeline, RedisError, RedisFuture, Value,
+    cmd, Client, Cmd, ErrorKind, IntoConnectionInfo, Pipeline, RedisError, RedisFuture, Value,
 };
 
 /// A `bb8::ManageConnection` for `redis::Client::get_async_connection`.
@@ -41,7 +41,7 @@ impl bb8::ManageConnection for RedisConnectionManager {
     }
 
     async fn is_valid(&self, conn: &mut Self::Connection) -> Result<(), Self::Error> {
-        let pong: String = redis::cmd("PING").query_async(conn).await?;
+        let pong: String = cmd("PING").query_async(conn).await?;
         match pong.as_str() {
             "PONG" => Ok(()),
             _ => Err((ErrorKind::ResponseError, "ping request").into()),
@@ -152,7 +152,7 @@ impl ConnectionLike for RedisConnection {
 
     fn req_packed_commands<'a>(
         &'a mut self,
-        cmd: &'a crate::Pipeline,
+        cmd: &'a Pipeline,
         offset: usize,
         count: usize,
     ) -> RedisFuture<'a, Vec<Value>> {
