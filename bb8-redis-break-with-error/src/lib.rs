@@ -77,7 +77,7 @@ impl RedisConnection {
     }
 
     pub fn set_close_required_with_error(&mut self, err: &RedisError) {
-        let close_required = match err.kind() {
+        let val = match err.kind() {
             ErrorKind::ResponseError => false,
             ErrorKind::AuthenticationFailed => true,
             ErrorKind::TypeError => false,
@@ -110,11 +110,11 @@ impl RedisConnection {
             ErrorKind::ReadOnly => false,
             _ => true,
         };
-        self.close_required = close_required
+        self.set_close_required(val)
     }
 
-    pub fn set_close_required(&mut self) {
-        self.close_required = true
+    pub fn set_close_required(&mut self, val: bool) {
+        self.close_required = val
     }
 
     pub fn is_close_required(&self) -> bool {
@@ -139,7 +139,15 @@ impl DerefMut for RedisConnection {
 //
 impl ConnectionLike for RedisConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
-        self.deref_mut().req_packed_command(cmd)
+        Box::pin(async move {
+            match self.connection.req_packed_command(cmd).await {
+                Ok(value) => Ok(value),
+                Err(err) => {
+                    self.set_close_required_with_error(&err);
+                    Err(err)
+                }
+            }
+        })
     }
 
     fn req_packed_commands<'a>(
@@ -148,69 +156,22 @@ impl ConnectionLike for RedisConnection {
         offset: usize,
         count: usize,
     ) -> RedisFuture<'a, Vec<Value>> {
-        self.deref_mut().req_packed_commands(cmd, offset, count)
+        Box::pin(async move {
+            match self
+                .connection
+                .req_packed_commands(cmd, offset, count)
+                .await
+            {
+                Ok(value) => Ok(value),
+                Err(err) => {
+                    self.set_close_required_with_error(&err);
+                    Err(err)
+                }
+            }
+        })
     }
 
     fn get_db(&self) -> i64 {
-        self.deref().get_db()
-    }
-}
-
-//
-pub trait ConnectionCloseRequiredLike {
-    fn set_close_required_with_error(&mut self, err: &RedisError);
-    fn set_close_required(&mut self);
-    fn is_close_required(&self) -> bool;
-}
-
-impl ConnectionCloseRequiredLike for RedisConnection {
-    fn set_close_required_with_error(&mut self, err: &RedisError) {
-        RedisConnection::set_close_required_with_error(self, err)
-    }
-
-    fn set_close_required(&mut self) {
-        RedisConnection::set_close_required(self)
-    }
-
-    fn is_close_required(&self) -> bool {
-        RedisConnection::is_close_required(self)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use std::error;
-
-    #[tokio::test]
-    async fn test_close_required_like() -> Result<(), Box<dyn error::Error>> {
-        let manager = RedisConnectionManager::new("redis://127.0.0.1:6379")?;
-        let pool = bb8::Pool::builder()
-            .test_on_check_out(false)
-            .build(manager)
-            .await?;
-
-        let mut conn =
-            match tokio::time::timeout(tokio::time::Duration::from_millis(100), pool.get()).await {
-                Ok(Ok(x)) => x,
-                Ok(Err(err)) => panic!("{}", err),
-                Err(_) => return Ok(()),
-            };
-
-        async fn ping<C>(conn: &mut C) -> Result<(), Box<dyn error::Error>>
-        where
-            C: ConnectionLike + ConnectionCloseRequiredLike,
-        {
-            let _ = redis::cmd("PING").query_async(conn).await.map_err(|err| {
-                conn.set_close_required_with_error(&err);
-                err
-            })?;
-            Ok(())
-        }
-
-        ping(conn.deref_mut()).await?;
-
-        Ok(())
+        self.connection.get_db()
     }
 }

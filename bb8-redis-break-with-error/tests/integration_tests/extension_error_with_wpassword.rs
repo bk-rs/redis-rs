@@ -29,10 +29,7 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
 
         let handle: JoinHandle<Result<(), Box<dyn error::Error + Send + Sync>>> =
             tokio::spawn(async move {
-                let mut conn = pool.get().await.map_err(|err| match err {
-                    bb8::RunError::User(err) => err,
-                    bb8::RunError::TimedOut => panic!("Pool TimedOut"),
-                })?;
+                let mut conn = pool.get().await.unwrap();
 
                 #[allow(clippy::single_match)]
                 match i {
@@ -52,7 +49,6 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
                                 assert_eq!(err.kind(), RedisErrorKind::ExtensionError);
                                 assert!(err.to_string().starts_with("WRONGPASS:"));
                                 assert_eq!(err.code(), Some("WRONGPASS"));
-                                conn.set_close_required_with_error(&err);
 
                                 err
                             })?;
