@@ -88,7 +88,10 @@ impl RedisConnection {
         let val = match err.kind() {
             ErrorKind::ResponseError => false,
             ErrorKind::AuthenticationFailed => true,
-            ErrorKind::TypeError => false,
+            ErrorKind::TypeError => {
+                // https://github.com/redis-rs/redis-rs/blob/main/src/types.rs#L18
+                true
+            }
             ErrorKind::ExecAbortError => false,
             ErrorKind::BusyLoadingError => false,
             ErrorKind::NoScriptError => false,
