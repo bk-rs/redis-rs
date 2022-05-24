@@ -86,22 +86,52 @@ impl RedisConnection {
 
     pub fn set_close_required_with_error(&mut self, err: &RedisError) {
         let val = match err.kind() {
-            ErrorKind::ResponseError => false,
+            ErrorKind::ResponseError => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L122
+                false
+            }
             ErrorKind::AuthenticationFailed => true,
             ErrorKind::TypeError => {
-                // https://github.com/redis-rs/redis-rs/blob/main/src/types.rs#L18
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/types.rs#L21
                 true
             }
-            ErrorKind::ExecAbortError => false,
-            ErrorKind::BusyLoadingError => false,
-            ErrorKind::NoScriptError => false,
+            ErrorKind::ExecAbortError => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L123
+                false
+            }
+            ErrorKind::BusyLoadingError => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L124
+                false
+            }
+            ErrorKind::NoScriptError => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L125
+                false
+            }
             ErrorKind::InvalidClientConfig => true,
-            ErrorKind::Moved => false,
-            ErrorKind::Ask => false,
-            ErrorKind::TryAgain => false,
-            ErrorKind::ClusterDown => false,
-            ErrorKind::CrossSlot => false,
-            ErrorKind::MasterDown => false,
+            ErrorKind::Moved => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L126
+                false
+            }
+            ErrorKind::Ask => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L127
+                false
+            }
+            ErrorKind::TryAgain => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L128
+                false
+            }
+            ErrorKind::ClusterDown => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L129
+                false
+            }
+            ErrorKind::CrossSlot => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L130
+                false
+            }
+            ErrorKind::MasterDown => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L131
+                false
+            }
             ErrorKind::IoError => {
                 // TODO, is_connection_dropped is_connection_refusal
                 //
@@ -118,7 +148,10 @@ impl RedisConnection {
                     _ => true,
                 }
             }
-            ErrorKind::ReadOnly => false,
+            ErrorKind::ReadOnly => {
+                // https://github.com/redis-rs/redis-rs/blob/0.21.5/src/parser.rs#L132
+                false
+            }
             _ => true,
         };
         self.set_close_required(val)
