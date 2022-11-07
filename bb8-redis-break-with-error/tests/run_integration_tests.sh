@@ -2,7 +2,7 @@
 
 set -ex
 
-version="${1:-7.0-alpine}"
+version="${1:-7-alpine}"
 
 # RUST_BACKTRACE=full ./tests/run_integration_tests.sh
 # RUST_LOG=trace ./tests/run_integration_tests.sh

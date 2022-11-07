@@ -2,9 +2,9 @@
 
 set -ex
 
-# ./run.sh 7.0-alpine 9999 "sleep 3"
+# ./run.sh 7-alpine 9999 "sleep 3"
 
-version="${1:-7.0-alpine}"
+version="${1:-7-alpine}"
 listen_port=$2
 callback=$3
 
