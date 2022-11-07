@@ -19,7 +19,7 @@ _integration_tests = []
 [dependencies]
 async-trait = { version = "0.1", default-features = false }
 bb8 = { version = "0.8", default-features = false }
-redis = { version = "0.21", default-features = false, features = ["tokio-comp"] }
+redis = { version = "0.22", default-features = false, features = ["tokio-comp"] }
 
 [dev-dependencies]
 tokio = { version = "1.18", features = ["macros", "rt-multi-thread", "time"] }
