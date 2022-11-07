@@ -41,7 +41,7 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
                             .unwrap();
                     }
                     _ => {
-                        let _: () = cmd("AUTH")
+                        cmd("AUTH")
                             .arg("xxx")
                             .query_async(&mut *conn)
                             .await
