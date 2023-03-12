@@ -1,4 +1,4 @@
-use std::{env, error, net::IpAddr};
+use std::{env, net::IpAddr};
 
 use log::debug;
 
@@ -6,7 +6,7 @@ use log::debug;
 pub(super) const PASSWORD: &str = "mypass";
 
 //
-pub(super) fn get_conn_addr() -> Result<String, Box<dyn error::Error>> {
+pub(super) fn get_conn_addr() -> Result<String, Box<dyn std::error::Error>> {
     let port = env::var("REDIS_TCP_PORT")?;
     debug!("REDIS_TCP_PORT {}", port);
 
@@ -16,7 +16,7 @@ pub(super) fn get_conn_addr() -> Result<String, Box<dyn error::Error>> {
     Ok(format!("redis://:{}@{}:{}", PASSWORD, ip_addr, port))
 }
 
-pub(super) fn get_conn_addr_without_password() -> Result<String, Box<dyn error::Error>> {
+pub(super) fn get_conn_addr_without_password() -> Result<String, Box<dyn std::error::Error>> {
     let port = env::var("REDIS_TCP_PORT")?;
     debug!("REDIS_TCP_PORT {}", port);
 

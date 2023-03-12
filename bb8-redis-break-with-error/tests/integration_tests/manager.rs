@@ -1,5 +1,3 @@
-use std::error;
-
 use bb8_redis_break_with_error::{
     bb8::ManageConnection as _,
     redis::{aio::Monitor, cmd},
@@ -10,7 +8,7 @@ use futures_util::StreamExt as _;
 use super::helpers::{get_conn_addr, init_logger};
 
 #[tokio::test]
-async fn simple() -> Result<(), Box<dyn error::Error>> {
+async fn simple() -> Result<(), Box<dyn std::error::Error>> {
     init_logger();
 
     //

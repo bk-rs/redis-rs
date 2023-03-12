@@ -1,5 +1,3 @@
-use std::error;
-
 use bb8_redis_break_with_error::{
     bb8,
     redis::{cmd, ErrorKind as RedisErrorKind},
@@ -11,7 +9,7 @@ use tokio::task::JoinHandle;
 use super::helpers::{get_conn_addr, get_conn_addr_without_password, init_logger, PASSWORD};
 
 #[tokio::test]
-async fn simple() -> Result<(), Box<dyn error::Error>> {
+async fn simple() -> Result<(), Box<dyn std::error::Error>> {
     init_logger();
 
     //
@@ -27,7 +25,7 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
     for i in 0..3 {
         let pool = pool.clone();
 
-        let handle: JoinHandle<Result<(), Box<dyn error::Error + Send + Sync>>> =
+        let handle: JoinHandle<Result<(), Box<dyn std::error::Error + Send + Sync>>> =
             tokio::spawn(async move {
                 let mut conn = pool.get().await.unwrap();
 
@@ -84,7 +82,7 @@ async fn simple() -> Result<(), Box<dyn error::Error>> {
     for i in 0..3 {
         let pool = pool.clone();
 
-        let handle: JoinHandle<Result<(), Box<dyn error::Error + Send + Sync>>> =
+        let handle: JoinHandle<Result<(), Box<dyn std::error::Error + Send + Sync>>> =
             tokio::spawn(async move {
                 let mut conn = pool.get().await.unwrap();
 

@@ -1,10 +1,7 @@
 pub use bb8;
 pub use redis;
 
-use core::{
-    fmt,
-    ops::{Deref, DerefMut},
-};
+use core::ops::{Deref, DerefMut};
 
 use async_trait::async_trait;
 use redis::{
@@ -59,8 +56,8 @@ pub struct RedisConnection {
     close_required: bool,
 }
 
-impl fmt::Debug for RedisConnection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl core::fmt::Debug for RedisConnection {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("RedisConnection")
             .field("connection", &"")
             .field("close_required", &self.close_required)
